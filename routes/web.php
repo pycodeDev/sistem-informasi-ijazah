@@ -24,7 +24,8 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('/ijazah/{status?}', [App\Http\Controllers\IjazahController::class, 'IjazahAdmin'])->name('ijazah_admin');
 Route::get('/ijazah/mhs/{id}/{level}', [App\Http\Controllers\IjazahController::class, 'index'])->name('ijazah');
-Route::get('/ijazah/mhs/{nim}', [App\Http\Controllers\IjazahController::class, 'store'])->name('req_ijazah');
+Route::post('/ijazah/mhs/action', [App\Http\Controllers\IjazahController::class, 'store'])->name('req_ijazah');
+Route::post('/ijazah/mhs/ambil', [App\Http\Controllers\IjazahController::class, 'AmbilIjazah'])->name('take_ijazah');
 
 Route::post('/ijazah/action', [App\Http\Controllers\IjazahController::class, 'update'])->name('update_ijazah');
 

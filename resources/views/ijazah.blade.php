@@ -53,49 +53,72 @@
                     @isset($detail_user[0])
                         @isset($ijazah)
                             @if (Auth()->User()->level == 'mhs')
-                                @if ($pending < 1)
-                                    <a class="btn btn-sm btn-danger mb-2" href="{{ route('req_ijazah', ['nim' => $detail_user[0]->nim]) }}">Request Ijazah</a>
-                                @endif
+                                {{-- @if ($pending < 1) --}}
+                                    {{-- <a class="btn btn-sm btn-danger mb-2" href="{{ route('req_ijazah', ['nim' => $detail_user[0]->nim]) }}">Request Ijazah</a> --}}
+                                    {{-- @endif --}}
+                                    <button class="btn btn-sm btn-primary mb-2" data-toggle="modal" data-target="#reqIjazahModal">Request Ijazah</button>
+                                    <button class="btn btn-sm btn-warning mb-2" data-toggle="modal" data-target="#reqIjazahWakilModal">Request Ijazah Wakilkan</button>
                             @endif
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <td>No</td>
+                                        <td>ID</td>
                                         <td>Nim</td>
+                                        <td>Nama Ijazah</td>
                                         <td>Status</td>
+                                        <td>Nama Approve</td>
+                                        <td>Alasan</td>
                                         <td>Tanggal</td>
+                                        <td>Action</td>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($ijazah as $data)
-                                    @php
-                                        $no = 1
-                                    @endphp
                                         <tr>
-                                            <td>{{ $no++ }}</td>
+                                            <td>{{ $data->id }}</td>
                                             <td>{{ $data->nim }}</td>
+                                            <td>{{ $data->name }}</td>
                                             <td>{{ $data->status }}</td>
+                                            <td>{{ $data->name_approve }}</td>
+                                            <td>{{ $data->alasan }}</td>
                                             <td>{{ $data->created_at }}</td>
+                                            <td>
+                                                @if ($data->status == "approve by dekan")
+                                                    @if ($data->nim_perwakilan != "")
+                                                        <button class="btn btn-sm btn-primary mb-2" onclick="reqAmbilIjazahModalWakil({{$data->id}})">Ambil Ijazah</button>
+                                                    @else
+                                                        <button class="btn btn-sm btn-primary mb-2" onclick="reqAmbilIjazahModal({{$data->id}})">Ambil Ijazah</button>
+                                                    @endif
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                             </table>
+                            @include('layouts.modal_ijazah')
                         @else
                             @if (Auth()->User()->level == 'mhs')
-                                Silahkan Request Ijazah Anda Dengan Klik Button Berikut <a href="{{ route('req_ijazah', ['nim' => $detail_user[0]->nim]) }}">Request Ijazah</a>
+                                {{-- Silahkan Request Ijazah Anda Dengan Klik Button Berikut <a href="{{ route('req_ijazah', ['nim' => $detail_user[0]->nim]) }}">Request Ijazah</a> --}}
+                                <button class="btn btn-sm btn-primary mb-2" id="take" data-toggle="modal" data-target="#reqIjazahModal">Request Ijazah</button>
+                                <button class="btn btn-sm btn-warning mb-2" id="take-wakil" data-toggle="modal" data-target="#reqIjazahWakilModal">Request Ijazah Wakilkan</button>
                             @else
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <td>No</td>
+                                            <td>ID</td>
                                             <td>Nim</td>
+                                            <td>Nama Ijazah</td>
                                             <td>Status</td>
+                                            <td>Nama Approve</td>
+                                            <td>Alasan</td>
                                             <td>Tanggal</td>
                                         </tr>
                                     </thead>
                                     <tbody>
                                        <tr>
-                                            <td colspan="4">Data Kosong</td>
+                                            <td colspan="7">Data Kosong</td>
                                        </tr>
                                     </tbody>
                                 </table>
@@ -111,6 +134,8 @@
                                     <td>No</td>
                                     <td>Nim</td>
                                     <td>Status</td>
+                                    <td>Nama Approve</td>
+                                    <td>Alasan</td>
                                     <td>Tanggal</td>
                                     <td>Action</td>
                                 </tr>
@@ -125,25 +150,72 @@
                                         <td>{{ $data->nim }}</td>
                                         <td>{{ $data->status }}</td>
                                         <td>{{ $data->created_at }}</td>
+                                        <td>{{ $data->name_approve }}</td>
+                                        <td>{{ $data->alasan }}</td>
                                         <td>
-                                            <form action="{{ route('update_ijazah') }}" method="POST">
-                                                @csrf
-                                                <input type="hidden" name="id" value="{{$data->id}}" >
-                                                <button class="btn btn-sm btn-success" name="submit_button" value="approve by {{Auth()->User()->level}}"><i class="fa fa-check"></i></button>
-                                                <button class="btn btn-sm btn-danger" name="submit_button" value="reject by {{Auth()->User()->level}}"><i class="fa fa-times"></i></button>
-                                            </form>
+                                            <button class="btn btn-sm btn-success mb-2" onclick="accIjazahModal({{$data->id}},'{{Auth()->User()->level}}')">Approve</button>
+                                            <button class="btn btn-sm btn-danger mb-2" onclick="rejIjazahModal({{$data->id}},'{{Auth()->User()->level}}')">Reject</button>
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
+                        @include('layouts.modal_ijazah_staff_dekan')
                         @endif
                     @endisset
                 </div>
             </div>
         </div>
     </div>
-
 </div>
 <!-- /.container-fluid -->
+
+<script>
+    function accIjazahModal(id, level) {
+        const modal = document.getElementById("accIjazahModal");
+        
+        document.getElementById("id").value = id;
+        document.getElementById("status").value = "approve by " + level;
+        modal.style.display = "block";
+    }
+    
+    function hideModal() {
+        document.getElementById("accIjazahModal").style.display = "none";
+    }
+    
+    function rejIjazahModal(id, level) {
+        const modal = document.getElementById("rejIjazahModal");
+        
+        document.getElementById("id_rej").value = id;
+        document.getElementById("status_rej").value = "reject by " + level;
+        modal.style.display = "block";
+    }
+    
+    function hideModalRej() {
+        document.getElementById("rejIjazahModal").style.display = "none";
+    }
+    
+    function reqAmbilIjazahModal(id) {
+        const modal = document.getElementById("reqAmbilIjazahModal");
+        console.log(id);
+        document.getElementById("id_ambil").value = id;
+        modal.style.display = "block";
+    }
+    
+    function hideModalReq() {
+        document.getElementById("reqAmbilIjazahModal").style.display = "none";
+    }
+    
+    function reqAmbilIjazahModalWakil(id) {
+        const modal = document.getElementById("reqAmbilIjazahWakilModal");
+        
+        document.getElementById("id_wakil").value = id;
+        modal.style.display = "block";
+    }
+    
+    function hideModalReq() {
+        document.getElementById("reqAmbilIjazahWakilModal").style.display = "none";
+    }
+
+</script>
 @endsection

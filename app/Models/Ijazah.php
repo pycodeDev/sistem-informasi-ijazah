@@ -16,5 +16,15 @@ class Ijazah extends Model
     protected $fillable = [
         'nim',
         'status',
+        'nim_perwakilan',
+        'upload_skl',
+        'upload_pembayaran',
+        'upload_surat_kuasa',
+        'upload_ktp',
+        'alasan',
+        'name_approve',
+        'surat_kuasa_pengambilan',
+        'upload_foto_pengambilan',
+        'nama_pengambil'
     ];
 }
